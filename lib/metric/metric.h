@@ -36,7 +36,7 @@ public:
 
     std::string to_string() const override {
         std::ostringstream oss;
-        oss << metric_title_ << ' ' << value_;
+        oss << '\"' << metric_title_ << '\"' << ' ' << value_;
         return oss.str();
     }
 

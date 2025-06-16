@@ -20,15 +20,14 @@ void MetricCollector::start(const std::string& output_file) {
 void MetricCollector::saver() {
     while (true) {
         sem_.acquire();
-        if (done_.load(std::memory_order_relaxed)) {
-            break;
-        }
         std::unique_ptr<IMetric> item;
         {
             std::scoped_lock lk(mtx_);
             if (!queue_.empty()) {
                 item = std::move(queue_.front());
                 queue_.pop();
+            } else if (done_.load()) {
+                break;
             }
         }
         if (item) {
