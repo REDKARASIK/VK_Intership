@@ -12,6 +12,7 @@ class IMetric {
 public:
     virtual ~IMetric() = default;
     virtual std::string to_string() const = 0;
+    static boost::posix_time::ptime parse_time_with_miliseconds(const std::string& time);
 };
 
 template<typename T>
@@ -23,7 +24,7 @@ public:
     metric_title_(name_metric)
     {
         if (!datetime.empty()) {
-            datetime_ = parse_time_with_miliseconds(datetime);
+            datetime_ = IMetric::parse_time_with_miliseconds(datetime);
         } else {
             datetime_ = boost::posix_time::microsec_clock::local_time();
         }
@@ -32,21 +33,6 @@ public:
     Metric(const Metric& other) = default;
     Metric(Metric&& other) = default;
     ~Metric() = default;
-
-    static boost::posix_time::ptime parse_time_with_miliseconds(const std::string& time) {
-        static const boost::regex re(R"(^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}$)", boost::regex::perl | boost::regex::no_except);
-        if (!boost::regex_match(time, re)) {
-            throw std::runtime_error("timestamp must be 'YYYY-MM-DD HH:MM:SS.mmm'");
-        }
-        std::istringstream iss(time);
-        iss.imbue(std::locale(std::locale::classic(), new boost::posix_time::time_input_facet("%Y-%m-%d %H:%M:%S%F")));
-        boost::posix_time::ptime pt;
-        iss >> pt;
-        if (pt.is_not_a_date_time()) {
-            throw std::runtime_error("failed to parse timestamp");
-        }
-        return pt;
-    }
 
     std::string to_string() const override {
         std::ostringstream oss;
