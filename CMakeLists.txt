@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 23)
 include_directories(lib)
 
 include(FetchContent)
-set(BOOST_INCLUDE_LIBRARIES date_time)
+set(BOOST_INCLUDE_LIBRARIES date_time regex)
 set(BOOST_ENABLE_CMAKE ON)
 FetchContent_Declare(
     Boost
