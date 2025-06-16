@@ -7,6 +7,7 @@
 #include <mutex>
 #include <memory>
 #include <queue>
+#include <sstream>
 
 class MetricCollector final {
 public:

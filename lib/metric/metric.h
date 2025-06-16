@@ -12,7 +12,8 @@ class IMetric {
 public:
     virtual ~IMetric() = default;
     virtual std::string to_string() const = 0;
-    static boost::posix_time::ptime parse_time_with_miliseconds(const std::string& time);
+    static boost::posix_time::ptime parse_time_with_milliseconds(const std::string& time);
+    virtual boost::posix_time::ptime get_datetime() const = 0;
 };
 
 template<typename T>
@@ -24,11 +25,10 @@ public:
     metric_title_(name_metric)
     {
         if (!datetime.empty()) {
-            datetime_ = IMetric::parse_time_with_miliseconds(datetime);
+            datetime_ = IMetric::parse_time_with_milliseconds(datetime);
         } else {
             datetime_ = boost::posix_time::microsec_clock::local_time();
         }
-        std::cout << datetime_ << std::endl;
     }
     Metric(const Metric& other) = default;
     Metric(Metric&& other) = default;
@@ -39,6 +39,8 @@ public:
         oss << '\"' << metric_title_ << '\"' << ' ' << value_;
         return oss.str();
     }
+
+    boost::posix_time::ptime get_datetime() const override {return datetime_;}
 
 private:
     T value_;
