@@ -17,6 +17,10 @@ public:
     void stop();
     template<typename M, typename... Args>
     void push(Args&&... args) {
+        if (done_.load(std::memory_order_relaxed)) {
+            return;
+        }
+        slots_free_.acquire();
         auto ptr = std::make_unique<M>(std::forward<Args>(args)...);
         {
             std::scoped_lock lk(mtx_);
@@ -26,27 +30,18 @@ public:
     }
     template<typename T>
     void push(const Metric<T>& metric) {
-        auto ptr = std::make_unique<Metric<T>>(metric);
-        {
-            std::scoped_lock lk(mtx_);
-            queue_.push(std::move(ptr));
-        }
-        sem_.release();
+        push<Metric<T>>(metric);
     }
 
     template<typename T>
     void push(Metric<T>&& metric) {
-        auto ptr = std::make_unique<Metric<T>>(std::move(metric));
-        {
-            std::scoped_lock lk(mtx_);
-            queue_.push(std::move(ptr));
-        }
-        sem_.release();
+        push<Metric<T>>(std::move(metric));
     }
 private:
     void saver();
 
     std::counting_semaphore<> sem_;
+    std::counting_semaphore<> slots_free_;
     std::ofstream file_;
     std::thread worker_;
     std::mutex mtx_;

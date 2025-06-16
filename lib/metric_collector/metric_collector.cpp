@@ -2,6 +2,7 @@
 
 MetricCollector::MetricCollector(size_t capacity) :
     sem_(0),
+    slots_free_(capacity),
     capacity_(capacity)
     {}
 
@@ -40,6 +41,7 @@ void MetricCollector::saver() {
                 break;
             }
         }
+        slots_free_.release();
         if (item) {
             std::string time = boost::posix_time::to_iso_extended_string(item->get_datetime()).replace(10, 1, " ");
             if (current_time.empty()) {
